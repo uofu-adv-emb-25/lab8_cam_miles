@@ -1,0 +1,28 @@
+Testing
+build
+log
+
+.vscode/
+**/build/
+**/CMakeCache.txt
+**/CMakeFiles
+**/cmake_install.cmake
+**/Makefile
+# Auto-cloned dependencies
+_deps
+pico-sdk
+src/picotool
+# Pico SDK's generated linker scripts, headers, etc.           
+/generated
+# Usually ingored (regenerated every configure)         
+compile_commands.json
+# Generated from CMake's testing system (CTest)
+**/CTestTestfile.cmake
+DartConfiguration.tcl
+# Generated linker script
+pico_flash_region.ld
+
+*.log.*
+*-asciinema
+*.pid
+*-profile
