@@ -33,3 +33,9 @@ void canbus_setup(void)
     // Start canbus
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
 }
+
+void main (void) {
+    stdio_init_all();
+    canbus_setup();
+}
+
