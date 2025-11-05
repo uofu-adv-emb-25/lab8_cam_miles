@@ -7,10 +7,7 @@ static struct can2040 cbus;
 
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
-    // Put your code here....
-    if (notify) {
-
-    }
+    // No incoming data; only transmitting
 }
 
 static void PIOx_IRQHandler(void)
@@ -43,6 +40,6 @@ void main (void) {
     struct can2040_msg message;
     message.id = 0;
     message.dlc = 8;
-    message.union = "hi";
+    message.data[0] = "W";
     can2040_transmit(&cbus, &message);
 }
