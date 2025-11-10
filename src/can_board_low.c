@@ -1,11 +1,15 @@
 #include <can2040.h>
 #include <hardware/regs/intctrl.h>
 #include <stdio.h>
+#include <FreeRTOS.h>
+#include <pico/cyw43_arch.h>
 #include <pico/stdlib.h>
+#include <queue.h>
 
 static struct can2040 cbus;
 
 QueueHandle_t messages;
+
 
 // When a message is recieved by CAN bus, send it into our messages queue to be handled
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
@@ -19,7 +23,31 @@ void receive_loop(__unused void *params)
     {
         struct can2040_msg msg;
         xQueueReceive(messages, &msg, portMAX_DELAY);
-        printf("Received message!");
+        printf("Received message: ");
+        printf("%d%d%d%d\n", 
+        (msg.data[0]), 
+        (msg.data[1]), 
+        (msg.data[2]), 
+        (msg.data[3]));
+    }
+}
+
+void transmit_loop(__unused void *params)
+{
+    struct can2040_msg message;
+
+    // Create the queue to hold max of 50 CAN messages
+    message.id = 1;
+    message.dlc = 8;
+    message.data[0] = 1;
+    message.data[1] = 2;
+    message.data[2] = 3;
+    message.data[3] = 4;
+    
+    while (1)
+    {
+        can2040_transmit(&cbus, &message);
+        vTaskDelay(10);
     }
 }
 
@@ -50,27 +78,15 @@ void canbus_setup(void)
 void main (void) {
     stdio_init_all();
 
-    canbus_setup();
-    struct can2040_msg message;
-    TaskHandle_t task;
-
-    // Create the queue to hold max of 50 CAN messages
     messages = xQueueCreate(50, sizeof(struct can2040_msg));
 
-    message.id = 1;
-    message.dlc = 8;
-    message.data[0] = 1;
-    message.data[1] = 2;
-    message.data[2] = 3;
-    message.data[3] = 4;
+    canbus_setup();
+    TaskHandle_t task_receiver;
+    TaskHandle_t task_transmitt;
 
-    while (1)
-    {
-        can2040_transmit(&cbus, &message);
-        sleep_ms(1000);
-    }
+    xTaskCreate(receive_loop, "ReceiverThread", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, &task_receiver);
+    xTaskCreate(transmit_loop, "TransmitterThread", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, &task_transmitt);
 
-    xTaskCreate(receive_loop, "ReceiverThread", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, &task);
     vTaskStartScheduler();
 
     return 0;
