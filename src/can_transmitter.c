@@ -40,6 +40,17 @@ void main (void) {
     struct can2040_msg message;
     message.id = 0;
     message.dlc = 8;
-    message.data[0] = "W";
-    can2040_transmit(&cbus, &message);
+    message.data[0] = 1;
+    message.data[1] = 2;
+    message.data[2] = 3;
+    message.data[3] = 4;
+    message.data[4] = 5;
+    message.data[5] = 6;
+    message.data[6] = 7;
+    message.data[7] = 8;
+    while (1)
+    {
+        can2040_transmit(&cbus, &message);
+        sleep_ms(500);
+    }
 }
