@@ -2,6 +2,7 @@
 #include <hardware/regs/intctrl.h>
 #include <stdio.h>
 #include <pico/stdlib.h>
+#include <FreeRTOS.h>
 
 static struct can2040 cbus;
 
@@ -41,8 +42,8 @@ void main (void) {
     stdio_init_all();
     canbus_setup();
     struct can2040_msg message;
-    message.id = 0;
-    message.dlc = 8;
-    message.union = "hi";
+    // message.id = 0;
+    // message.dlc = 8;
+    // message.union = "hi";
     can2040_transmit(&cbus, &message);
 }
