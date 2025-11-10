@@ -46,8 +46,8 @@ void receive_loop(__unused void *params)
     {
         struct can2040_msg msg;
         xQueueReceive(messages, &msg, portMAX_DELAY);
-        printf("Received message!");
-        printf("%d%d%d%d%d%d%d%d", 
+        printf("Received message: ");
+        printf("%d%d%d%d%d%d%d%d\n", 
         (msg.data[0]), 
         (msg.data[1]), 
         (msg.data[2]), 
