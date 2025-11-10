@@ -2,7 +2,7 @@
 set(execName "program")
 
 add_executable(${execName}
-    timer.c
+    can_transmitter.c
     )
 
 pico_set_program_name(${execName} "program")
@@ -18,6 +18,7 @@ target_link_libraries(${execName} PRIVATE
   pico_stdlib
   pico_multicore
   pico_async_context_freertos
+  can2040
   FreeRTOS-Kernel-Heap4
 )
 

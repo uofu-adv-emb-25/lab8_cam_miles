@@ -5,10 +5,21 @@
 
 static struct can2040 cbus;
 
+QueueHandle_t messages;
+
+// When a message is recieved by CAN bus, send it into our messages queue to be handled
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
-    if (notify == CAN2040_NOTIFY_RX) {
-        
+    xQueueSendToBack(messages, msg, portMAX_DELAY);
+}
+
+void receive_loop(__unused void *params)
+{
+    while (1)
+    {
+        struct can2040_msg msg;
+        xQueueReceive(messages, &msg, portMAX_DELAY);
+        printf("Received message!");
     }
 }
 
@@ -36,17 +47,34 @@ void canbus_setup(void)
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
 }
 
-void main_task (*void) {
-    struct can2040_msg message;
-
-}
-
 void main (void) {
     stdio_init_all();
+
     canbus_setup();
-    xTaskCreate(main_task, "MainThread",
-                    configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1UL, &task);   
+    struct can2040_msg message;
+    TaskHandle_t task;
+
+    // Create the queue to hold max of 50 CAN messages
+    messages = xQueueCreate(50, sizeof(struct can2040_msg));
+
+    message.id = 0;
+    message.dlc = 8;
+    message.data[0] = 5;
+    message.data[1] = 6;
+    message.data[2] = 7;
+    message.data[3] = 8;
+
+    while (1)
+    {
+        can2040_transmit(&cbus, &message);
+        //sleep_ms(500);
+    }
+
+    xTaskCreate(receive_loop, "ReceiverThread", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, &task);
     vTaskStartScheduler();
+
     return 0;
 }
+
+
 

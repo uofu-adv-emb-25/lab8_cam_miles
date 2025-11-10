@@ -5,9 +5,22 @@
 
 static struct can2040 cbus;
 
+QueueHandle_t messages;
+
+// When a message is recieved by CAN bus, send it into our messages queue to be handled
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
-    // No incoming data; only transmitting
+    xQueueSendToBack(messages, msg, portMAX_DELAY);
+}
+
+void receive_loop(__unused void *params)
+{
+    while (1)
+    {
+        struct can2040_msg msg;
+        xQueueReceive(messages, &msg, portMAX_DELAY);
+        printf("Received message!");
+    }
 }
 
 static void PIOx_IRQHandler(void)
@@ -36,21 +49,32 @@ void canbus_setup(void)
 
 void main (void) {
     stdio_init_all();
+
     canbus_setup();
     struct can2040_msg message;
-    message.id = 0;
+    TaskHandle_t task;
+
+    // Create the queue to hold max of 50 CAN messages
+    messages = xQueueCreate(50, sizeof(struct can2040_msg));
+
+    message.id = 1;
     message.dlc = 8;
     message.data[0] = 1;
     message.data[1] = 2;
     message.data[2] = 3;
     message.data[3] = 4;
-    message.data[4] = 5;
-    message.data[5] = 6;
-    message.data[6] = 7;
-    message.data[7] = 8;
+
     while (1)
     {
         can2040_transmit(&cbus, &message);
-        sleep_ms(500);
+        sleep_ms(1000);
     }
+
+    xTaskCreate(receive_loop, "ReceiverThread", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, &task);
+    vTaskStartScheduler();
+
+    return 0;
 }
+
+
+
