@@ -3,7 +3,7 @@
 ![Serial_Message](./screenshots/lab8_act1_message_received.png)
 
 #### AD2 + Waveforms screenshot of transmitter TX and receiver RX signals
-![Act1_rxtx](./screenshots/lab8_act1_message_received.png)
+![Act1_rxtx](./screenshots/lab8_act1_rxtx.png)
 
 
 ## Activity 2
